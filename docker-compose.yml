@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database Service
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_secure_key
+      POSTGRES_DB: inventory_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data_volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. FastAPI Python Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fastapi_backend
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres_secure_key@db:5432/inventory_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # 3. React Frontend Service (Served via SPA-enabled Nginx container)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: react_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pg_data_volume:
+    name: pg_inventory_data

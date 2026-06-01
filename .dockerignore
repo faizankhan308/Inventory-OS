@@ -1,0 +1,14 @@
+node_modules
+dist
+database.json
+.git
+.gitignore
+.env
+.env.example
+backend/.venv
+backend/__pycache__
+*.pyc
+*.pyo
+*.pyd
+.db
+db_data

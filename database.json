@@ -1,0 +1,92 @@
+{
+  "products": [
+    {
+      "id": "p1",
+      "name": "Alloy Tech Mechanical Keyboard",
+      "sku": "KB-MECH-87",
+      "price": 129.99,
+      "quantity": 45
+    },
+    {
+      "id": "p2",
+      "name": "Ergonomic Mesh Office Chair",
+      "sku": "CHAIR-ERG-02",
+      "price": 349.5,
+      "quantity": 4
+    },
+    {
+      "id": "p3",
+      "name": "UltraWide 34-inch Curved Monitor",
+      "sku": "MON-34UW-IPS",
+      "price": 599.99,
+      "quantity": 12
+    },
+    {
+      "id": "p4",
+      "name": "Thunderbolt 4 Docking Station",
+      "sku": "DOCK-TB4-PRO",
+      "price": 189,
+      "quantity": 3
+    },
+    {
+      "id": "p5",
+      "name": "Noise Cancelling Studio Earbuds",
+      "sku": "EAR-ANC-05",
+      "price": 89.95,
+      "quantity": 60
+    },
+    {
+      "id": "p_mpuuzvw4",
+      "name": "hgkhgvb",
+      "sku": "777",
+      "price": 499,
+      "quantity": 60
+    }
+  ],
+  "customers": [
+    {
+      "id": "c1",
+      "name": "Sarah Jenkins",
+      "email": "sarah.j@example.com",
+      "phone": "+1 (555) 234-5678"
+    },
+    {
+      "id": "c2",
+      "name": "Marcus Chen",
+      "email": "marcus.chen@example.com",
+      "phone": "+1 (555) 987-6543"
+    },
+    {
+      "id": "c3",
+      "name": "Elena Rostova",
+      "email": "elena.r@example.com",
+      "phone": "+1 (555) 456-7890"
+    }
+  ],
+  "orders": [
+    {
+      "id": "o1",
+      "customer_id": "c1",
+      "customer_name": "Sarah Jenkins",
+      "items": [
+        {
+          "product_id": "p4",
+          "product_name": "Thunderbolt 4 Docking Station",
+          "sku": "DOCK-TB4-PRO",
+          "quantity": 1,
+          "price": 189
+        },
+        {
+          "product_id": "p1",
+          "product_name": "Alloy Tech Mechanical Keyboard",
+          "sku": "KB-MECH-87",
+          "quantity": 1,
+          "price": 129.99
+        }
+      ],
+      "total_amount": 318.99,
+      "status": "Completed",
+      "created_at": "2026-05-28T14:32:00Z"
+    }
+  ]
+}
