@@ -91,8 +91,13 @@ export default function Dashboard({ stats, onNavigate, onRestock }) {
         {/* Total Revenue */}
         <div className="bento-card flex flex-col justify-between" id="kpi-revenue">
           <span className="bento-label">Total Revenue</span>
-          <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className="text-2xl xl:text-3xl font-extrabold tracking-tight text-[#0F172A] truncate">₹{stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1 min-w-0">
+            <span
+              className="font-extrabold tracking-tight text-[#0F172A] break-all"
+              style={{ fontSize: 'clamp(0.95rem, 2.2vw, 1.6rem)', lineHeight: 1.2 }}
+            >
+              ₹{stats.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
             <span className="text-xs text-green-600 font-bold font-mono shrink-0">NET</span>
           </div>
         </div>
