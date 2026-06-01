@@ -7,12 +7,14 @@ import {
   RefreshCw, 
   CheckCircle,
   Database,
-  Sparkles
+  Sparkles,
+  History
 } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import ProductsTab from "./components/ProductsTab";
 import CustomersTab from "./components/CustomersTab";
 import OrdersTab from "./components/OrdersTab";
+import InventoryTrackingTab from "./components/InventoryTrackingTab";
 
 const getApiUrl = (endpoint) => {
   const base = import.meta.env.VITE_API_URL || "";
@@ -30,6 +32,7 @@ export default function App() {
   const [customers, setCustomers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState(null);
+  const [transactions, setTransactions] = useState([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -50,14 +53,15 @@ export default function App() {
 
     try {
       // Parallel fetches
-      const [resProducts, resCustomers, resOrders, resStats] = await Promise.all([
+      const [resProducts, resCustomers, resOrders, resStats, resTransactions] = await Promise.all([
         fetch(getApiUrl("/products")),
         fetch(getApiUrl("/customers")),
         fetch(getApiUrl("/orders")),
-        fetch(getApiUrl("/dashboard-stats"))
+        fetch(getApiUrl("/dashboard-stats")),
+        fetch(getApiUrl("/inventory-transactions"))
       ]);
 
-      if (!resProducts.ok || !resCustomers.ok || !resOrders.ok || !resStats.ok) {
+      if (!resProducts.ok || !resCustomers.ok || !resOrders.ok || !resStats.ok || !resTransactions.ok) {
         throw new Error("Failed to load telemetry registers.");
       }
 
@@ -65,11 +69,13 @@ export default function App() {
       const rawCustomers = await resCustomers.json();
       const rawOrders = await resOrders.json();
       const rawStats = await resStats.json();
+      const rawTransactions = await resTransactions.json();
 
       setProducts(rawProducts);
       setCustomers(rawCustomers);
       setOrders(rawOrders);
       setStats(rawStats);
+      setTransactions(rawTransactions);
     } catch (e) {
       console.error(e);
       triggerAlert("error", e.message || "Failed to communicate with fullstack server.");
@@ -319,6 +325,19 @@ export default function App() {
             <ShoppingCart className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap">Orders</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab("inventory-tracking")}
+            className={`flex-1 md:flex-none flex items-center justify-center md:justify-start gap-2 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border-2 ${
+              activeTab === "inventory-tracking"
+                ? "bg-slate-900 text-white border-slate-950"
+                : "bg-white text-slate-500 hover:text-slate-900 hover:bg-slate-50 border-[#E2E8F0]"
+            }`}
+            id="menu-tracking"
+          >
+            <History className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap">Tracking</span>
+          </button>
         </nav>
 
         {/* Content body panel */}
@@ -363,6 +382,11 @@ export default function App() {
                   products={products}
                   onCreateOrder={handleCreateOrder}
                   onDeleteOrder={handleDeleteOrder}
+                />
+              )}
+              {activeTab === "inventory-tracking" && (
+                <InventoryTrackingTab 
+                  transactions={transactions}
                 />
               )}
             </div>

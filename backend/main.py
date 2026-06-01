@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from database import engine, SessionLocal, init_db_and_seed, DBProduct, DBCustomer, DBOrder, DBOrderItem
+from database import engine, SessionLocal, init_db_and_seed, DBProduct, DBCustomer, DBOrder, DBOrderItem, DBInventoryTransaction
 
 # Initialize database schemas
 init_db_and_seed()
@@ -33,6 +33,17 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def log_stock_movement(db: Session, product_name: str, sku: str, change_qty: int, reason: str, product_id: Optional[str] = None):
+    tx = DBInventoryTransaction(
+        id=f"tx_{uuid.uuid4().hex[:12]}",
+        product_id=product_id,
+        product_name=product_name,
+        sku=sku,
+        change_quantity=change_qty,
+        reason=reason
+    )
+    db.add(tx)
 
 # ==========================================
 # PYDANTIC SCHEMAS
@@ -127,6 +138,18 @@ class DashboardStatsResponse(BaseModel):
     lowStockProducts: List[LowStockProductInfo]
     recentOrders: List[RecentOrderInfo]
 
+class InventoryTransactionResponse(BaseModel):
+    id: str
+    product_id: Optional[str] = None
+    product_name: str
+    sku: str
+    change_quantity: int
+    reason: str
+    created_at: datetime.datetime
+
+    class Config:
+        from_attributes = True
+
 
 # ==========================================
 # PRODUCT ENDPOINTS
@@ -161,6 +184,17 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
         quantity=product.quantity
     )
     db.add(db_product)
+    
+    # Log initial stock movement
+    log_stock_movement(
+        db,
+        product_name=db_product.name,
+        sku=db_product.sku,
+        change_qty=db_product.quantity,
+        reason="Initial Stock",
+        product_id=db_product.id
+    )
+    
     db.commit()
     db.refresh(db_product)
     return db_product
@@ -181,10 +215,24 @@ def update_product(product_id: str, product: ProductCreate, db: Session = Depend
             detail="Another product already uses this SKU"
         )
     
+    # Calculate stock quantity difference
+    diff = product.quantity - db_product.quantity
+    
     db_product.name = product.name.strip()
     db_product.sku = product.sku.upper().strip()
     db_product.price = product.price
     db_product.quantity = product.quantity
+    
+    # Log stock transaction if quantity changed
+    if diff != 0:
+        log_stock_movement(
+            db,
+            product_name=db_product.name,
+            sku=db_product.sku,
+            change_qty=diff,
+            reason="Manual Adjustment",
+            product_id=db_product.id
+        )
     
     db.commit()
     db.refresh(db_product)
@@ -198,6 +246,15 @@ def delete_product(product_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Product not found")
     
     try:
+        # Log stock removal due to product deletion
+        log_stock_movement(
+            db,
+            product_name=db_product.name,
+            sku=db_product.sku,
+            change_qty=-db_product.quantity,
+            reason="Product Deleted",
+            product_id=db_product.id
+        )
         db.delete(db_product)
         db.commit()
     except IntegrityError:
@@ -351,6 +408,16 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
             saving_item.order_id = order_id
             db.add(saving_item)
             
+            # Log stock deduction due to order checkout
+            log_stock_movement(
+                db,
+                product_name=saving_item.product_name,
+                sku=saving_item.sku,
+                change_qty=-saving_item.quantity,
+                reason=f"Order Placed (ID: {order_id})",
+                product_id=saving_item.product_id
+            )
+            
         db.commit()
         db.refresh(db_order)
         
@@ -382,6 +449,16 @@ def delete_order(order_id: str, db: Session = Depends(get_db)):
             product = db.query(DBProduct).filter(DBProduct.id == item.product_id).first()
             if product:
                 product.quantity += item.quantity
+                
+            # Log stock replenishment due to order cancellation
+            log_stock_movement(
+                db,
+                product_name=item.product_name,
+                sku=item.sku,
+                change_qty=item.quantity,
+                reason=f"Order Cancelled (ID: {order_id})",
+                product_id=item.product_id
+            )
                 
     db.delete(db_order)
     db.commit()
@@ -434,3 +511,11 @@ def read_dashboard_stats(db: Session = Depends(get_db)):
         "lowStockProducts": low_stock_products,
         "recentOrders": recent_orders
     }
+
+# ==========================================
+# INVENTORY TRANSACTION ENDPOINTS
+# ==========================================
+
+@app.get("/inventory-transactions", response_model=List[InventoryTransactionResponse])
+def read_inventory_transactions(db: Session = Depends(get_db)):
+    return db.query(DBInventoryTransaction).order_by(DBInventoryTransaction.created_at.desc()).all()

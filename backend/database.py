@@ -51,6 +51,17 @@ class DBOrderItem(Base):
 
     order = relationship("DBOrder", back_populates="items")
 
+class DBInventoryTransaction(Base):
+    __tablename__ = "inventory_transactions"
+    
+    id = Column(String, primary_key=True, index=True)
+    product_id = Column(String, nullable=True)
+    product_name = Column(String, nullable=False)
+    sku = Column(String, nullable=False)
+    change_quantity = Column(Integer, nullable=False)
+    reason = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 def init_db_and_seed():
     # Setup tables
     Base.metadata.create_all(bind=engine)
