@@ -192,12 +192,20 @@ def update_product(product_id: str, product: ProductCreate, db: Session = Depend
 
 @app.delete("/products/{product_id}")
 def delete_product(product_id: str, db: Session = Depends(get_db)):
+    from sqlalchemy.exc import IntegrityError
     db_product = db.query(DBProduct).filter(DBProduct.id == product_id).first()
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    db.delete(db_product)
-    db.commit()
+    try:
+        db.delete(db_product)
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot delete this product because it is referenced in an active order. Please delete the associated orders first."
+        )
     return {"message": "Product successfully deleted"}
 
 

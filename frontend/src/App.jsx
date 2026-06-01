@@ -93,7 +93,7 @@ export default function App() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Failed to create product listing.");
+      throw new Error(err.detail || err.error || "Failed to create product listing.");
     }
 
     triggerAlert("success", `Product '${productData.name}' created successfully!`);
@@ -110,7 +110,7 @@ export default function App() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Failed to update product registration.");
+      throw new Error(err.detail || err.error || "Failed to update product registration.");
     }
 
     triggerAlert("success", `Product '${productData.name}' details updated!`);
@@ -136,7 +136,7 @@ export default function App() {
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.error || "Failed to replenish stock level.");
+        throw new Error(err.detail || err.error || "Failed to replenish stock level.");
       }
 
       triggerAlert("success", `Restocked listing of '${targetProduct.name}' sequentially.`);
@@ -154,7 +154,7 @@ export default function App() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Could not delete product listing.");
+      throw new Error(err.detail || err.error || "Could not delete product listing.");
     }
 
     triggerAlert("success", "Product catalog listing unlinked successfully.");
@@ -171,7 +171,7 @@ export default function App() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Failed to registers customer profile.");
+      throw new Error(err.detail || err.error || "Failed to registers customer profile.");
     }
 
     triggerAlert("success", `Customer profile for '${customerData.name}' successfully integrated!`);
@@ -186,7 +186,7 @@ export default function App() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Could not delete customer contact.");
+      throw new Error(err.detail || err.error || "Could not delete customer contact.");
     }
 
     triggerAlert("success", "Customer profiles details archived.");
@@ -203,7 +203,7 @@ export default function App() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Failed to checkout checkout transaction.");
+      throw new Error(err.detail || err.error || "Failed to checkout checkout transaction.");
     }
 
     triggerAlert("success", "Checkout finalized. Stock deductions performed!");
@@ -218,7 +218,7 @@ export default function App() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.error || "Could not cancel transaction invoice.");
+      throw new Error(err.detail || err.error || "Could not cancel transaction invoice.");
     }
 
     triggerAlert("success", "Order transaction reversed. Stock replenishment complete.");
