@@ -95,6 +95,21 @@ def init_db_and_seed():
             item2 = DBOrderItem(id="oi2", order_id=order_id, product_id="p1", product_name="Alloy Tech Mechanical Keyboard", sku="KB-MECH-87", quantity=1, price=129.99)
             db.add_all([o1, item1, item2])
             db.commit()
+
+        if db.query(DBInventoryTransaction).count() == 0:
+            # Seed Initial Transactions for Products
+            tx1 = DBInventoryTransaction(id="tx_s1", product_id="p1", product_name="Alloy Tech Mechanical Keyboard", sku="KB-MECH-87", change_quantity=46, reason="Initial Stock")
+            tx2 = DBInventoryTransaction(id="tx_s2", product_id="p2", product_name="Ergonomic Mesh Office Chair", sku="CHAIR-ERG-02", change_quantity=4, reason="Initial Stock")
+            tx3 = DBInventoryTransaction(id="tx_s3", product_id="p3", product_name="UltraWide 34-inch Curved Monitor", sku="MON-34UW-IPS", change_quantity=12, reason="Initial Stock")
+            tx4 = DBInventoryTransaction(id="tx_s4", product_id="p4", product_name="Thunderbolt 4 Docking Station", sku="DOCK-TB4-PRO", change_quantity=4, reason="Initial Stock")
+            tx5 = DBInventoryTransaction(id="tx_s5", product_id="p5", product_name="Noise Cancelling Studio Earbuds", sku="EAR-ANC-05", change_quantity=60, reason="Initial Stock")
+            
+            # Seed transaction deductions for Order o1
+            tx6 = DBInventoryTransaction(id="tx_s6", product_id="p4", product_name="Thunderbolt 4 Docking Station", sku="DOCK-TB4-PRO", change_quantity=-1, reason="Order Placed (ID: o1)")
+            tx7 = DBInventoryTransaction(id="tx_s7", product_id="p1", product_name="Alloy Tech Mechanical Keyboard", sku="KB-MECH-87", change_quantity=-1, reason="Order Placed (ID: o1)")
+            
+            db.add_all([tx1, tx2, tx3, tx4, tx5, tx6, tx7])
+            db.commit()
     except Exception as e:
         print(f"Db seeding log indicator error: {e}")
         db.rollback()
