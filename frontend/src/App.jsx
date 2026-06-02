@@ -355,7 +355,8 @@ export default function App() {
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               {activeTab === "dashboard" && (
                 <Dashboard 
-                  stats={stats} 
+                  stats={stats}
+                  products={products}
                   onNavigate={setActiveTab} 
                   onRestock={handleQuickRestock}
                 />

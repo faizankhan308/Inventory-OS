@@ -14,7 +14,7 @@ import {
   Cell 
 } from "recharts";
 
-export default function Dashboard({ stats, onNavigate, onRestock }) {
+export default function Dashboard({ stats, products = [], onNavigate, onRestock }) {
   const [restockQty, setRestockQty] = useState({});
   const [isUpdating, setIsUpdating] = useState(null);
 
@@ -31,12 +31,13 @@ export default function Dashboard({ stats, onNavigate, onRestock }) {
     }
   };
 
-  const chartData = [
-    ...stats.lowStockProducts.map(p => ({ name: p.name, stock: p.quantity })),
-    ...stats.recentOrders.flatMap(o => o.items.map(i => ({ name: i.product_name || "Item", stock: i.quantity })))
-  ].slice(0, 8);
+  // Use real products array for accurate stock chart — sorted by stock ascending (low stock first)
+  const chartData = (products.length > 0 ? products : stats.lowStockProducts)
+    .map(p => ({ name: p.name, stock: p.quantity }))
+    .sort((a, b) => a.stock - b.stock)
+    .slice(0, 8);
 
-  // Simple fallbacks if chart data is empty
+  // Fallback if no products at all
   const displayChartData = chartData.length > 0 ? chartData : [
     { name: "Keeb Core", stock: 45 },
     { name: "Chair V2", stock: 4 },
